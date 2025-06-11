@@ -8,7 +8,9 @@ Symmetry and Asymmetry, are also implemented.
 The monogenic signal is an alternative way of representing an image, which has a
 number of advantages for further processing. For an introduction to the monogenic
 signal and derived features with references to the relevant scientific literature,
-please see [this document](https://chrisbridge.science/docs/intro_to_monogenic_signal.pdf) (PDF).
+please see [this document](https://chrisbridge.science/docs/intro_to_monogenic_signal.pdf) (PDF). If you find this or the monogenic library useful consider citation of the [work](https://arxiv.org/pdf/1703.09199).
+
+**Python bindings are also provided** using [pybind11](https://github.com/pybind/pybind11) & [cvnp](https://github.com/pthom/cvnp), allowing you to use this library from Python with seamless NumPy integration.
 
 ### Capabilities
 
@@ -29,6 +31,7 @@ quantities from still images.
 
 ### Dependencies
 
+#### C++ Dependencies
 * A C++ compiler supporting the C++11 standard (requires a relatively modern version of your compiler).
 * The [OpenCV](http://opencv.org) library. Tested on version 4.2 but most fairly recent
 versions should be compatible. If you are using GNU/Linux, there will probably
@@ -38,7 +41,43 @@ be a suitable packaged version in your distribution's repository.
 platforms including MSVC, g++ and clang) there may be a small speed boost due to
 parallelisation.
 
+#### Python Dependencies (for Python bindings)
+* Python 3.6 or higher
+* NumPy
+* OpenCV Python (`cv2`)
+* The project uses Pybind11 and cvnp as submodules (see building instructions below)
+
+### Building the Project
+
+#### Initialize Submodules
+
+**Important**: Before building, you must initialize the git submodules:
+
+```bash
+git submodule update --init --recursive
+```
+
+This will download the required Pybind11 and cvnp dependencies needed for the Python bindings.
+
+#### Build with CMake
+
+To build both the C++ library and Python bindings, use CMake:
+
+```bash
+mkdir build
+cd build
+cmake ..
+make -j$(nproc)
+```
+
+This will build:
+- The monogenic C++ library
+- The C++ example executable (`monogenic_image_test`)
+- The Python module (`pymonogenic`)
+
 ### Instructions for Use
+
+#### C++ Usage
 
 The implementation consists of a single C++ class (`monogenicProcessor`), defined
 in the `src/monogenicProcessor.cpp` and `include/monogenic/monogenicProcessor.h`
@@ -46,20 +85,64 @@ files. To use the code in your project, you just need to include the `.cpp`
 file in the usual way, and add the repository's `include/` directory in the
 include path.
 
-There is an example programme showing how to use the class in the `example/`
+There is an example program showing how to use the class in the `example/cpp/`
 directory. The comments in this file should demonstrate the basic usage.
 
-### Compiling and Running the Example
+#### Python Usage
 
-To compile the example on a GNU/Linux system, simply run the `make` command from
-the `example/` directory. To run the example, then execute
+After building the project, the Python module `pymonogenic` will be available. You can use it like this:
 
-```bash
-$ ./monogenicTest video_file.avi
+```python
+import cv2
+import pymonogenic
+
+# Load an image
+image = cv2.imread('your_image.jpg', cv2.IMREAD_GRAYSCALE)
+
+# Create a processor
+processor = pymonogenic.MonogenicProcessor(image.shape[0], image.shape[1], wavelength=50.0)
+
+# Calculate monogenic signal
+processor.findMonogenicSignal(image)
+
+# Get results
+feature_asymmetry = processor.getFeatureAsymmetry()
+feature_symmetry = processor.getFeatureSymmetry()
+even_part = processor.getEvenFilt()
+odd_y, odd_x = processor.getOddFiltCartesian()
 ```
 
-where `video_file.avi` is the name of a video file. This will then calculate
-the monogenic signal and feature symmetry and asymmetry images, and display then.
+### Running the Examples
+
+#### C++ Example
+
+To compile and run the C++ example:
+
+```bash
+# Build the project first (see Building section above)
+cd build
+
+# Run the example with a video file
+./monogenic_image_test path/to/your/video_file.avi
+```
+
+#### Python Example
+
+To run the Python example:
+
+```bash
+# Make sure you've built the project first
+cd example/python
+
+# Run with an image file
+python monogenicImageTest.py path/to/your/image.jpg
+```
+
+The Python example will:
+- Load and process the specified image
+- Calculate all monogenic signal components
+- Display the results in separate windows (Even filter, Odd Y, Odd X, Feature Symmetry, Feature Asymmetry)
+- Automatically scale the display windows to fit your screen
 
 ### Author
 
