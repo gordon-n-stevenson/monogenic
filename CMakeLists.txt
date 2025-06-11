@@ -8,19 +8,29 @@ project(monogenic CXX)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+# Find required packages first
 find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+find_package(OpenCV REQUIRED COMPONENTS core highgui imgcodecs imgproc)
 
+# Include directories after finding packages
 include_directories(
+    ${OpenCV_INCLUDE_DIRS}
     ${CMAKE_CURRENT_SOURCE_DIR}/include # Include monogenic library headers
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
+# Create the monogenic library
 add_library(monogenic src/monogenicProcessor.cpp)
 target_link_libraries(monogenic ${OpenCV_LIBS})
 
-find_package(OpenCV REQUIRED COMPONENTS core highgui imgcodecs)
+# Make sure the monogenic library includes the necessary headers
+target_include_directories(monogenic PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${OpenCV_INCLUDE_DIRS}
+)
 
-add_executable(monogenic_image_test example/cpp/monogenicImageTest.cpp)
+# Create the test executable
+add_executable(monogenic_image_test ${CMAKE_CURRENT_SOURCE_DIR}/example/cpp/monogenicTest.cpp)
 
 target_include_directories(monogenic_image_test PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -32,6 +42,7 @@ target_link_libraries(monogenic_image_test PUBLIC
     ${OpenCV_LIBS}    # Link to the necessary OpenCV libraries
 )
 
+# Add subdirectories
 add_subdirectory(pybind11)
 add_subdirectory(cvnp)
-add_subdirectory(cpp)
+add_subdirectory(python)

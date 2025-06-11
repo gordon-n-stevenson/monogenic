@@ -27,7 +27,7 @@ target_link_libraries(pymonogenic PRIVATE pybind11::embed cvnp monogenic ${OpenC
 
 install(TARGETS pymonogenic
         COMPONENT python
-        LIBRARY DESTINATION "lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages"
+        LIBRARY DESTINATION "lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/dist-packages"
         ARCHIVE DESTINATION "lib"
         RUNTIME DESTINATION "bin"
 )
